@@ -75,6 +75,27 @@ app.use('/api/add-category', (req, res) => {
     })
 })
 
+app.use('/api/update-category', (req, res) => {
+    // update category
+    const categoryId = req.body.id;
+    const categoryName = req.body.name;
+    console.log('update category')
+    Category.findByIdAndUpdate(categoryId, {
+        name: categoryName,
+        slug: convertToSlug(categoryName)
+    }, (err, category) => {
+        if (err) {
+            res.status(500).json({
+                msg: 'error updating category',
+                error: err
+            })
+        } else {
+            res.json(category)
+        }
+    }
+    )
+})
+
 app.use('/api/delete-category', (req, res) => {
     // delete category
     const categoryId = req.body.id;
@@ -116,7 +137,8 @@ app.use('/api/add-record', (req, res) => {
         name,
         categoryId,
         shortInfo,
-        more_data_html
+        more_data_html,
+        last_date
     } = req.body;
 
     console.log('add record')
@@ -126,7 +148,7 @@ app.use('/api/add-record', (req, res) => {
         slug: convertToSlug(name),
         categoryId: categoryId,
         short_information: shortInfo,
-        last_date: new Date(), // change to lastdate when we have it
+        last_date: last_date,
         updated_at: null,
         more_data_html: more_data_html
     })
@@ -135,7 +157,6 @@ app.use('/api/add-record', (req, res) => {
             res.status(500).json({
                 msg: 'error saving record',
                 error: err
-
             })
         } else {
             res.json(record)
@@ -159,7 +180,45 @@ app.use('/api/delete-record', (req, res) => {
     })
 })
 
-app.use('/test', async(req, res) => {
+app.use('/api/update-record', (req, res) => {
+    // update record
+    const recordId = req.body.id;
+    const {
+        name,
+        categoryId,
+        shortInfo,
+        last_date,
+        more_data_html
+    } = req.body;
+
+    console.log(last_date, '*****')
+
+    console.log('update record')
+    Record.findByIdAndUpdate(recordId, {
+        name: name,
+        slug: convertToSlug(name),
+        categoryId: categoryId,
+        short_information: shortInfo,
+        last_date: last_date,
+        updated_at: new Date(),
+        more_data_html: more_data_html
+
+    }, (err, record) => {
+        if (err) {
+            res.status(500).json({
+                msg: 'error updating record',
+                error: err
+            })
+        } else {
+            res.json(record)
+        }
+    }
+    )
+})
+
+
+
+app.use('/test', async (req, res) => {
     const data = {
         more_data_html: `<table width="671" border="1" cellspacing="0" cellpadding="0">
         <tbody>
