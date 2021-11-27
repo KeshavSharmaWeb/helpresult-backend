@@ -75,6 +75,27 @@ app.use('/api/add-category', (req, res) => {
     })
 })
 
+app.use('/api/update-category', (req, res) => {
+    // update category
+    const categoryId = req.body.id;
+    const categoryName = req.body.name;
+    console.log('update category')
+    Category.findByIdAndUpdate(categoryId, {
+        name: categoryName,
+        slug: convertToSlug(categoryName)
+    }, (err, category) => {
+        if (err) {
+            res.status(500).json({
+                msg: 'error updating category',
+                error: err
+            })
+        } else {
+            res.json(category)
+        }
+    }
+    )
+})
+
 app.use('/api/delete-category', (req, res) => {
     // delete category
     const categoryId = req.body.id;
@@ -159,7 +180,7 @@ app.use('/api/delete-record', (req, res) => {
     })
 })
 
-app.use('/test', async(req, res) => {
+app.use('/test', async (req, res) => {
     const data = {
         more_data_html: `<table width="671" border="1" cellspacing="0" cellpadding="0">
         <tbody>
