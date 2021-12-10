@@ -3,7 +3,7 @@ let mongoose = require('mongoose');
 let CategorySchema = new mongoose.Schema({
     name: String,
     slug: String,
-    date: { type: Date, default: Date.now },
+    date: String,
 });
 
 module.exports = mongoose.model(

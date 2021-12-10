@@ -2,9 +2,10 @@ let mongoose = require('mongoose');
 
 let RecordSchema = new mongoose.Schema({
     name: String,
+    post_display_name: String,
     slug: String,
-    created_at: { type: Date, default: Date.now },
-    updated_at: Date,
+    created_at: String,
+    updated_at: String,
     short_information: String,
     last_date: Date,
     more_data_html: String,
