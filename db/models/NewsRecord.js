@@ -3,6 +3,7 @@ let mongoose = require('mongoose');
 const newsrecord = new mongoose.Schema({
     name: String,
     recordId: String,
+    fillColor: String,
 })
 
 module.exports = mongoose.model('newsrecord', newsrecord, 'NewsRecord');

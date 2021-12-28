@@ -286,14 +286,14 @@ app.use("/api/news-records", (req, res) => {
 })
 
 // add news records
-app.use('/api/news-records/add', (req, res) => {
+app.use('/api/add-news-records', (req, res) => {
     console.log("add news record *************");
-    const {name , recordId} = req.body;
-    console.log(name, recordId);
+    const {name , recordId, fillColor} = req.body;
 
     const newsRecord = new NewsRecord({
         name: name,
-        recordId: recordId
+        recordId: recordId,
+        fillColor: fillColor,
     })
 
     newsRecord.save((err, newsRecord) => {
@@ -310,7 +310,7 @@ app.use('/api/news-records/add', (req, res) => {
 })
 
 // delete news records
-app.use('/api/news-records/delete', (req, res) => {
+app.use('/api/delete-news-records', (req, res) => {
     const {id} = req.body;
     NewsRecord.findByIdAndDelete(id, (err, newsRecord) => {
         if (err) {
