@@ -5,6 +5,7 @@ const cors = require('cors');
 const Record = require('./db/models/Record');
 const User = require('./db/models/User');
 const NewsRecord = require('./db/models/NewsRecord');
+const Log = require('./db/models/Log');
 require('./db')
 
 // functions
@@ -92,6 +93,17 @@ app.use('/api/add-category', async (req, res) => {
             })
         } else {
             res.json(category)
+            const log = new Log({
+                user: "Super User",
+                action: "Added Category -> Id -> " + category._id,
+                datetime: new Date().toLocaleString(),
+            })
+            log.save((err, log) => {
+                if (err) {
+                    console.log(err)
+                }
+            }
+            )
         }
     })
 })
@@ -116,6 +128,17 @@ app.use('/api/update-category', async (req, res) => {
             })
         } else {
             res.json(category)
+            const log = new Log({
+                user: "Super User",
+                action: "Updated Category -> Id -> " + category._id,
+                datetime: new Date().toLocaleString(),
+            })
+            log.save((err, log) => {
+                if (err) {
+                    console.log(err)
+                }
+            }
+            )
         }
     }
     )
@@ -133,6 +156,18 @@ app.use('/api/delete-category', async (req, res) => {
             })
         } else {
             res.json(category)
+
+            const log = new Log({
+                user: "Super User",
+                action: "Deleted Category -> Id -> " + category._id,
+                datetime: new Date().toLocaleString(),
+            })
+            log.save((err, log) => {
+                if (err) {
+                    console.log(err)
+                }
+            }
+            )
         }
     })
 })
@@ -190,6 +225,24 @@ app.use('/api/add-record', async (req, res) => {
                 })
             } else {
                 res.json(record)
+                User.findById(userId, (err, user) => {
+                    if (err) {
+                        console.log(err)
+                    } else {
+
+                        const log = new Log({
+                            user: user.name,
+                            action: "Added Post -> Id -> " + record._id,
+                            datetime: new Date().toLocaleString(),
+                        })
+                        log.save((err, log) => {
+                            if (err) {
+                                console.log(err)
+                            }
+                        }
+                        )
+                    }
+                })
             }
         })
     } else {
@@ -216,6 +269,24 @@ app.use('/api/delete-record', async (req, res) => {
                 })
             } else {
                 res.json(record)
+                User.findById(userId, (err, user) => {
+                    if (err) {
+                        console.log(err)
+                    } else {
+
+                        const log = new Log({
+                            user: user.name,
+                            action: "Deleted Post -> Id -> " + record._id,
+                            datetime: new Date().toLocaleString(),
+                        })
+                        log.save((err, log) => {
+                            if (err) {
+                                console.log(err)
+                            }
+                        }
+                        )
+                    }
+                })
             }
         })
     } else {
@@ -251,7 +322,7 @@ app.use('/api/update-record', async (req, res) => {
             updated_at: new Date().toLocaleString(),
             more_data_html: more_data_html
 
-        }, (err, record) => {
+        }, async (err, record) => {
             if (err) {
                 res.status(500).json({
                     msg: 'error updating record',
@@ -259,6 +330,24 @@ app.use('/api/update-record', async (req, res) => {
                 })
             } else {
                 res.json(record)
+                User.findById(userId, (err, user) => {
+                    if (err) {
+                        console.log(err)
+                    } else {
+
+                        const log = new Log({
+                            user: user.name,
+                            action: "Updated Post -> Id -> " + record._id,
+                            datetime: new Date().toLocaleString(),
+                        })
+                        log.save((err, log) => {
+                            if (err) {
+                                console.log(err)
+                            }
+                        }
+                        )
+                    }
+                })
             }
         }
         )
@@ -282,13 +371,13 @@ app.use("/api/news-records", (req, res) => {
         } else {
             res.json(newsRecord)
         }
-})
+    })
 })
 
 // add news records
 app.use('/api/add-news-records', (req, res) => {
     console.log("add news record *************");
-    const {name , recordId, fillColor} = req.body;
+    const { name, recordId, fillColor } = req.body;
 
     const newsRecord = new NewsRecord({
         name: name,
@@ -304,6 +393,17 @@ app.use('/api/add-news-records', (req, res) => {
             })
         } else {
             res.json(newsRecord)
+            const log = new Log({
+                user: "Super User",
+                action: "Post added to news -> Post Id -> " + newsRecord._id,
+                datetime: new Date().toLocaleString(),
+            })
+            log.save((err, log) => {
+                if (err) {
+                    console.log(err)
+                }
+            }
+            )
         }
     }
     )
@@ -311,7 +411,7 @@ app.use('/api/add-news-records', (req, res) => {
 
 // delete news records
 app.use('/api/delete-news-records', (req, res) => {
-    const {id} = req.body;
+    const { id } = req.body;
     NewsRecord.findByIdAndDelete(id, (err, newsRecord) => {
         if (err) {
             res.status(500).json({
@@ -320,6 +420,17 @@ app.use('/api/delete-news-records', (req, res) => {
             })
         } else {
             res.json(newsRecord)
+            const log = new Log({
+                user: "Super User",
+                action: "Deleted News Post -> Post Id -> " + newsRecord._id,
+                datetime: new Date().toLocaleString(),
+            })
+            log.save((err, log) => {
+                if (err) {
+                    console.log(err)
+                }
+            }
+            )
         }
     }
     )
@@ -327,7 +438,7 @@ app.use('/api/delete-news-records', (req, res) => {
 
 // update news records
 app.use('/api/news-records/update', (req, res) => {
-    const {id, name, recordId} = req.body;
+    const { id, name, recordId } = req.body;
     NewsRecord.findByIdAndUpdate(id, {
         name: name,
         recordId: recordId
@@ -339,6 +450,17 @@ app.use('/api/news-records/update', (req, res) => {
             })
         } else {
             res.json(newsRecord)
+            const log = new Log({
+                user: "Super user",
+                action: "Updated news post -> Post Id -> " + newsRecord._id,
+                datetime: new Date().toLocaleString(),
+            })
+            log.save((err, log) => {
+                if (err) {
+                    console.log(err)
+                }
+            }
+            )
         }
     }
     )
@@ -353,6 +475,17 @@ app.post("/api/login", (req, res) => {
         if (user) {
             if (password === user.password) {
                 res.send({ message: "login success", user: user, success: true })
+                const log = new Log({
+                    user: username,
+                    action: "User logged in",
+                    datetime: new Date().toLocaleString(),
+                })
+                log.save((err, log) => {
+                    if (err) {
+                        console.log(err)
+                    }
+                }
+                )
             } else {
                 res.send({ message: "wrong credentials", success: false })
             }
@@ -448,6 +581,19 @@ app.post("/api/user/delete", (req, res) => {
         }
     })
 });
+
+app.get('/api/logs', (req, res) => {
+    Log.find(req.query, (err, logs) => {
+        if (err) {
+            res.status(500).json({
+                msg: 'error fetching logs',
+                error: err
+            })
+        } else {
+            res.json(logs)
+        }
+    })
+})
 
 
 
