@@ -197,7 +197,7 @@ app.use('/api/add-record', async (req, res) => {
         name,
         userId,
         post_display_name,
-        categoryId,
+        categoryIds,
         shortInfo,
         more_data_html,
         last_date
@@ -211,7 +211,7 @@ app.use('/api/add-record', async (req, res) => {
             post_display_name: post_display_name,
             created_at: new Date().toLocaleString(),
             slug: convertToSlug(name),
-            categoryId: categoryId,
+            categoryIds: categoryIds,
             short_information: shortInfo,
             last_date: last_date,
             updated_at: null,
@@ -304,7 +304,7 @@ app.use('/api/update-record', async (req, res) => {
         name,
         userId,
         post_display_name,
-        categoryId,
+        categoryIds,
         shortInfo,
         last_date,
         more_data_html
@@ -316,7 +316,7 @@ app.use('/api/update-record', async (req, res) => {
             name: name,
             post_display_name: post_display_name,
             slug: convertToSlug(name),
-            categoryId: categoryId,
+            categoryIds: categoryIds,
             short_information: shortInfo,
             last_date: last_date,
             updated_at: new Date().toLocaleString(),
@@ -376,13 +376,13 @@ app.use("/api/news-records", (req, res) => {
 
 // add news records
 app.use('/api/add-news-records', (req, res) => {
-    console.log("add news record *************");
     const { name, recordId, fillColor } = req.body;
 
     const newsRecord = new NewsRecord({
         name: name,
         recordId: recordId,
         fillColor: fillColor,
+        datetime: new Date().toLocaleString()
     })
 
     newsRecord.save((err, newsRecord) => {
@@ -437,34 +437,34 @@ app.use('/api/delete-news-records', (req, res) => {
 })
 
 // update news records
-app.use('/api/news-records/update', (req, res) => {
-    const { id, name, recordId } = req.body;
-    NewsRecord.findByIdAndUpdate(id, {
-        name: name,
-        recordId: recordId
-    }, (err, newsRecord) => {
-        if (err) {
-            res.status(500).json({
-                msg: 'error updating news record',
-                error: err
-            })
-        } else {
-            res.json(newsRecord)
-            const log = new Log({
-                user: "Super user",
-                action: "Updated news post -> Post Id -> " + newsRecord._id,
-                datetime: new Date().toLocaleString(),
-            })
-            log.save((err, log) => {
-                if (err) {
-                    console.log(err)
-                }
-            }
-            )
-        }
-    }
-    )
-})
+// app.use('/api/news-records/update', (req, res) => {
+//     const { id, name, recordId } = req.body;
+//     NewsRecord.findByIdAndUpdate(id, {
+//         name: name,
+//         recordId: recordId
+//     }, (err, newsRecord) => {
+//         if (err) {
+//             res.status(500).json({
+//                 msg: 'error updating news record',
+//                 error: err
+//             })
+//         } else {
+//             res.json(newsRecord)
+//             const log = new Log({
+//                 user: "Super user",
+//                 action: "Updated news post -> Post Id -> " + newsRecord._id,
+//                 datetime: new Date().toLocaleString(),
+//             })
+//             log.save((err, log) => {
+//                 if (err) {
+//                     console.log(err)
+//                 }
+//             }
+//             )
+//         }
+//     }
+//     )
+// })
 
 
 // Login 
