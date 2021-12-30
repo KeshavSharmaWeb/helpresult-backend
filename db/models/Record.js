@@ -9,6 +9,7 @@ let RecordSchema = new mongoose.Schema({
     short_information: String,
     last_date: {type: Date, required: false},
     more_data_html: String,
+    subCategory: {type: mongoose.Schema.Types.ObjectId, ref: 'SubCategory'},
     categoryIds: [{type: String, required: true}],
 });
 
