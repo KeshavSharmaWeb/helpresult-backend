@@ -6,6 +6,7 @@ const Record = require('./db/models/Record');
 const User = require('./db/models/User');
 const NewsRecord = require('./db/models/NewsRecord');
 const Log = require('./db/models/Log');
+const SubCategory = require('./db/models/SubCategory');
 require('./db')
 
 // functions
@@ -173,6 +174,122 @@ app.use('/api/delete-category', async (req, res) => {
 })
 
 
+// SUB - CATEGORIES
+
+app.use('/api/sub-categories', (req, res) => {
+    SubCategory.find(req.query, (err, categories) => {
+        if (err) {
+            res.status(500).json({
+                msg: 'error fetching categories',
+                error: err
+            })
+        } else {
+            res.json(categories)
+        }
+    }
+    )
+
+})
+
+app.use('/api/add-sub-category', async (req, res) => {
+    // add category
+    const {
+        name,
+    } = req.body;
+    const subcategory_save = new SubCategory({
+        name: name,
+        slug: convertToSlug(name),
+        date: new Date().toLocaleString(),
+    })
+    subcategory_save.save((err, category) => {
+        if (err) {
+            res.status(500).json({
+                msg: 'error saving category',
+                error: err
+            })
+        } else {
+            res.json(category)
+            const log = new Log({
+                user: "Super User",
+                action: "Added Sub Category -> Id -> " + category._id,
+                datetime: new Date().toLocaleString(),
+            })
+            log.save((err, log) => {
+                if (err) {
+                    console.log(err)
+                }
+            }
+            )
+        }
+    })
+})
+
+app.use('/api/update-sub-category', async (req, res) => {
+    // update category
+    const {
+        id,
+        name,
+    } = req.body;
+
+    const payload = {
+        name: name,
+        slug: convertToSlug(name),
+    }
+
+    SubCategory.findByIdAndUpdate(id, payload, (err, category) => {
+        if (err) {
+            res.status(500).json({
+                msg: 'error updating category',
+                error: err
+            })
+        } else {
+            res.json(category)
+            const log = new Log({
+                user: "Super User",
+                action: "Updated Sub Category -> Id -> " + category._id,
+                datetime: new Date().toLocaleString(),
+            })
+            log.save((err, log) => {
+                if (err) {
+                    console.log(err)
+                }
+            }
+            )
+        }
+    }
+    )
+})
+
+app.use('/api/delete-sub-category', async (req, res) => {
+    // delete category
+    const categoryId = req.body.id;
+
+    SubCategory.findByIdAndDelete(categoryId, (err, category) => {
+        if (err) {
+            res.status(500).json({
+                msg: 'error deleting category',
+                error: err
+            })
+        } else {
+            res.json(category)
+
+            const log = new Log({
+                user: "Super User",
+                action: "Deleted Sub Category -> Id -> " + category._id,
+                datetime: new Date().toLocaleString(),
+            })
+            log.save((err, log) => {
+                if (err) {
+                    console.log(err)
+                }
+            }
+            )
+        }
+    })
+})
+
+
+
 // RECORDS
 
 app.use('/api/records', (req, res) => {
@@ -197,6 +314,7 @@ app.use('/api/add-record', async (req, res) => {
         name,
         userId,
         post_display_name,
+        subCategoryId,
         categoryIds,
         shortInfo,
         more_data_html,
@@ -211,6 +329,7 @@ app.use('/api/add-record', async (req, res) => {
             post_display_name: post_display_name,
             created_at: new Date().toLocaleString(),
             slug: convertToSlug(name),
+            subCategory: subCategoryId,
             categoryIds: categoryIds,
             short_information: shortInfo,
             last_date: last_date,
@@ -304,6 +423,7 @@ app.use('/api/update-record', async (req, res) => {
         name,
         userId,
         post_display_name,
+        subCategoryId,
         categoryIds,
         shortInfo,
         last_date,
@@ -317,6 +437,7 @@ app.use('/api/update-record', async (req, res) => {
             post_display_name: post_display_name,
             slug: convertToSlug(name),
             categoryIds: categoryIds,
+            subCategory: subCategoryId,
             short_information: shortInfo,
             last_date: last_date,
             updated_at: new Date().toLocaleString(),
