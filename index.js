@@ -296,7 +296,11 @@ app.use('/api/delete-sub-category', async (req, res) => {
 app.use('/api/records', (req, res) => {
     // fetch all records
     console.log('fetch all records')
-    Record.find(req.query, (err, records) => {
+    Record.find({
+        categoryIds: {
+            $in: [req.query.categoryId]
+        }
+    }, (err, records) => {
         if (err) {
             res.status(500).json({
                 msg: 'error fetching records',
