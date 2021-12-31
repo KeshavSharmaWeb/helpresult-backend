@@ -1,6 +1,7 @@
 let mongoose = require('mongoose');
 
 let RecordSchema = new mongoose.Schema({
+    acitve: Boolean,
     name: String,
     post_display_name: String,
     slug: String,
@@ -9,7 +10,7 @@ let RecordSchema = new mongoose.Schema({
     short_information: String,
     last_date: {type: Date, required: false},
     more_data_html: String,
-    subCategory: {type: mongoose.Schema.Types.ObjectId, ref: 'SubCategory'},
+    subCategory: {type: mongoose.Schema.Types.ObjectId, ref: 'SubCategory', required: false},
     categoryIds: [{type: String, required: true}],
 });
 
