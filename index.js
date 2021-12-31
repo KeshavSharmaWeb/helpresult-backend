@@ -427,6 +427,7 @@ app.use('/api/update-record', async (req, res) => {
         categoryIds,
         shortInfo,
         last_date,
+        update_date,
         more_data_html
     } = req.body;
 
@@ -440,7 +441,7 @@ app.use('/api/update-record', async (req, res) => {
             subCategory: subCategoryId,
             short_information: shortInfo,
             last_date: last_date,
-            updated_at: new Date().toLocaleString(),
+            updated_at: update_date,
             more_data_html: more_data_html
 
         }, async (err, record) => {
