@@ -7,6 +7,7 @@ const User = require('./db/models/User');
 const NewsRecord = require('./db/models/NewsRecord');
 const Log = require('./db/models/Log');
 const SubCategory = require('./db/models/SubCategory');
+const asyncmodule = require('async')
 require('./db')
 
 // functions
@@ -45,8 +46,8 @@ async function givePermissonOnBasisOfRole(userId, role) {
 
 // App config
 const app = express();
-app.use(express.json())
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json({ limit: '20000000mb' }))
+app.use(bodyParser.urlencoded({ extended: true, limit: '20000000mb' }));
 app.use(cors());
 
 app.use('/ping', (req, res) => {
@@ -308,6 +309,42 @@ app.use('/api/records', (req, res) => {
     )
 })
 
+const record_with_categoryId = [
+    {"name": "admitcard", "categoryId": "61c7fcc88b071fa93f007479", "limit": 15},
+    {"name": "answerkey", "categoryId": "61c7fcd58b071fa93f00747d", "limit": 7},
+    {"name": "important", "categoryId": "61c7fce38b071fa93f007481", "limit": 7},
+    {"name": "job", "categoryId": "61c7fccb8b071fa93f00747b", "limit": 33},
+    {"name": "result", "categoryId": "61c7fcc58b071fa93f007477", "limit": 18},
+    {"name": "syllabus", "categoryId": "61c7fcdd8b071fa93f00747f", "limit": 7},
+    {"name": "verification", "categoryId": "61c7fce58b071fa93f007483", "limit": 7},
+]
+
+app.use('/api/home-records', (req, res) => {
+    // fetch all records
+    console.log('fetch all records')
+    const final = {}
+    asyncmodule.each(record_with_categoryId, async (i, callback) => {
+        const categoryIdOfRecord = i.categoryId
+        let fetchedRecords = await Record.find({
+            categoryIds: {
+                $in: [i.categoryId]
+            }
+        }).limit(i.limit).exec()
+        // log thee length of fetch records
+        final[categoryIdOfRecord] = fetchedRecords
+    }, function(err) {
+        if(err) {
+          console.log('A element failed to process', err)
+          res.status(500).json(err)
+        } else {
+          console.log('All elements have been processed successfully')
+          // array with the results of each removeTodo job
+          res.status(200).json(final) 
+        }
+    })
+
+    })
+
 app.use('/api/add-record', async (req, res) => {
     // add record
     const {
@@ -326,6 +363,7 @@ app.use('/api/add-record', async (req, res) => {
     if (await givePermissonOnBasisOfRole(userId, ADD_ONLY)) {
         const record = new Record({
             name: name,
+            active: true,
             post_display_name: post_display_name,
             created_at: new Date().toLocaleString(),
             slug: convertToSlug(name),
@@ -716,6 +754,25 @@ app.get('/api/logs', (req, res) => {
         }
     })
 })
+
+app.use('/api/bulk-records', async (req, res) => {
+    // add record
+    const {
+        records,
+        } = req.body;
+    console.log('add record')
+        Record.insertMany(records, (err, records) => {
+            if (err) {
+                res.status(500).json({
+                    msg: 'error saving records',
+                    error: err
+                })
+            } else {
+                res.json(records)
+            }
+        }
+        )
+    })
 
 
 
