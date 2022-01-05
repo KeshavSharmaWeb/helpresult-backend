@@ -444,7 +444,7 @@ app.use('/api/delete-record', async (req, res) => {
                     error: err
                 })
             } else {
-                res.json(record)
+                res.json({ status: 200 })
                 User.findById(userId, (err, user) => {
                     if (err) {
                         console.log(err)
@@ -552,6 +552,47 @@ app.use("/api/news-records", (req, res) => {
         }
     })
 })
+
+app.use('/api/update-news-record', async (req, res) => {
+    // update category
+    console.log("update news record")
+    const {
+        id,
+        name,
+        fillColor,
+        recordId,
+    } = req.body;
+
+    const payload = {
+        name: name,
+        recordId: recordId,
+        fillColor: fillColor
+    }
+
+    NewsRecord.findByIdAndUpdate(id, payload, (err, newsrecord) => {
+        if (err) {
+            res.status(500).json({
+                msg: 'error updating news record',
+                error: err
+            })
+        } else {
+            res.json(newsrecord)
+            const log = new Log({
+                user: "Super User",
+                action: "Updated NewsRecord -> Id -> " + newsrecord._id,
+                datetime: new Date().toLocaleString(),
+            })
+            log.save((err, log) => {
+                if (err) {
+                    console.log(err)
+                }
+            }
+            )
+        }
+    }
+    )
+})
+
 
 // add news records
 app.use('/api/add-news-records', (req, res) => {
