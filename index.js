@@ -61,7 +61,6 @@ app.use('/ping', (req, res) => {
 
 app.use('/api/categories', (req, res) => {
     // fetch all categories
-    console.log('fetch all categories')
 
     Category.find(req.query, (err, categories) => {
         if (err) {
@@ -332,7 +331,7 @@ const record_with_categoryId = [
     {"name": "admitcard", "categoryId": "61c7fcc88b071fa93f007479", "limit": 15},
     {"name": "answerkey", "categoryId": "61c7fcd58b071fa93f00747d", "limit": 7},
     {"name": "important", "categoryId": "61c7fce38b071fa93f007481", "limit": 7},
-    {"name": "job", "categoryId": "61c7fccb8b071fa93f00747b", "limit": 33},
+    {"name": "job", "categoryId": "61c7fccb8b071fa93f00747b", "limit": 38},
     {"name": "result", "categoryId": "61c7fcc58b071fa93f007477", "limit": 18},
     {"name": "syllabus", "categoryId": "61c7fcdd8b071fa93f00747f", "limit": 7},
     {"name": "verification", "categoryId": "61c7fce58b071fa93f007483", "limit": 7},
