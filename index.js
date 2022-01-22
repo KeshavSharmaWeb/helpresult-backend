@@ -51,6 +51,7 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '20000000mb' }));
 app.use(cors());
 
 app.use('/ping', (req, res) => {
+
     res.json({
         msg: 'success',
         time: new Date().toLocaleString(),
@@ -61,7 +62,6 @@ app.use('/ping', (req, res) => {
 
 app.use('/api/categories', (req, res) => {
     // fetch all categories
-    console.log('fetch all categories')
 
     Category.find(req.query, (err, categories) => {
         if (err) {
@@ -73,7 +73,7 @@ app.use('/api/categories', (req, res) => {
             res.json(categories)
         }
     }
-    )
+    ).sort({_id: -1})
 
 })
 
@@ -188,7 +188,7 @@ app.use('/api/sub-categories', (req, res) => {
             res.json(categories)
         }
     }
-    )
+    ).sort({_id: -1})
 
 })
 
@@ -300,7 +300,8 @@ app.use('/api/records', (req, res) => {
         Record.find({
             categoryIds: {
                 $in: [req.query.categoryId]
-            }
+            },
+            active: true
         }, (err, records) => {
             if (err) {
                 res.status(500).json({
@@ -311,9 +312,9 @@ app.use('/api/records', (req, res) => {
                 res.json(records)
             }
         }
-        )
-    } else {
-        Record.find(req.query, (err, records) => {
+        ).sort({_id: -1})
+    } else if(req.query.page) {
+        Record.find({active: true}, (err, records) => {
             if (err) {
                 res.status(500).json({
                     msg: 'error fetching records',
@@ -323,19 +324,45 @@ app.use('/api/records', (req, res) => {
                 res.json(records)
             }
         }
-        )
+        ).sort({_id: -1}).limit(10).skip(parseInt(req.query.page) * 10)
+        // )
+    } else {
+        Record.find({active: true}, (err, records) => {
+            if (err) {
+                res.status(500).json({
+                    msg: 'error fetching records',
+                    error: err
+                })
+            } else {
+                res.json(records)
+            }
+        }
+        ).sort({_id: -1})
     }
-    
+})
+
+app.use('/api/records-count', (req, res) => {
+    Record.countDocuments(req.query, (err, count) => {
+        if (err) {
+            res.status(500).json({
+                msg: 'error fetching records',
+                error: err
+            })
+        } else {
+            res.json(count)
+        }
+    }
+    )
 })
 
 const record_with_categoryId = [
-    {"name": "admitcard", "categoryId": "61c7fcc88b071fa93f007479", "limit": 15},
-    {"name": "answerkey", "categoryId": "61c7fcd58b071fa93f00747d", "limit": 7},
-    {"name": "important", "categoryId": "61c7fce38b071fa93f007481", "limit": 7},
-    {"name": "job", "categoryId": "61c7fccb8b071fa93f00747b", "limit": 33},
-    {"name": "result", "categoryId": "61c7fcc58b071fa93f007477", "limit": 18},
-    {"name": "syllabus", "categoryId": "61c7fcdd8b071fa93f00747f", "limit": 7},
-    {"name": "verification", "categoryId": "61c7fce58b071fa93f007483", "limit": 7},
+    { "name": "admitcard", "categoryId": "61c7fcc88b071fa93f007479", "limit": 15 },
+    { "name": "answerkey", "categoryId": "61c7fcd58b071fa93f00747d", "limit": 7 },
+    { "name": "important", "categoryId": "61c7fce38b071fa93f007481", "limit": 7 },
+    { "name": "job", "categoryId": "61c7fccb8b071fa93f00747b", "limit": 38 },
+    { "name": "result", "categoryId": "61c7fcc58b071fa93f007477", "limit": 18 },
+    { "name": "syllabus", "categoryId": "61c7fcdd8b071fa93f00747f", "limit": 7 },
+    { "name": "verification", "categoryId": "61c7fce58b071fa93f007483", "limit": 7 },
 ]
 
 app.use('/api/home-records', (req, res) => {
@@ -347,22 +374,23 @@ app.use('/api/home-records', (req, res) => {
         let fetchedRecords = await Record.find({
             categoryIds: {
                 $in: [i.categoryId]
-            }
-        }).limit(i.limit).exec()
+            },
+            active: true
+        }).sort({_id: -1}).limit(i.limit).exec()
         // log thee length of fetch records
         final[categoryIdOfRecord] = fetchedRecords
-    }, function(err) {
-        if(err) {
-          console.log('A element failed to process', err)
-          res.status(500).json(err)
+    }, function (err) {
+        if (err) {
+            console.log('A element failed to process', err)
+            res.status(500).json(err)
         } else {
-          console.log('All elements have been processed successfully')
-          // array with the results of each removeTodo job
-          res.status(200).json(final) 
+            console.log('All elements have been processed successfully')
+            // array with the results of each removeTodo job
+            res.status(200).json(final)
         }
     })
 
-    })
+})
 
 app.use('/api/add-record', async (req, res) => {
     // add record
@@ -444,7 +472,7 @@ app.use('/api/delete-record', async (req, res) => {
                     error: err
                 })
             } else {
-                res.json(record)
+                res.json({ status: 200 })
                 User.findById(userId, (err, user) => {
                     if (err) {
                         console.log(err)
@@ -453,6 +481,54 @@ app.use('/api/delete-record', async (req, res) => {
                         const log = new Log({
                             user: user.name,
                             action: "Deleted Post -> Id -> " + record._id,
+                            datetime: new Date().toLocaleString(),
+                        })
+                        log.save((err, log) => {
+                            if (err) {
+                                console.log(err)
+                            }
+                        }
+                        )
+                    }
+                })
+            }
+        })
+    } else {
+        res.json({
+            msg: 'unauthorized',
+            status: 401
+        })
+    }
+})
+
+app.use('/api/change-record-status', async (req, res) => {
+    // delete record
+    const recordId = req.body.id;
+    const {
+        userId,
+        status
+    } = req.body;
+
+    if (await givePermissonOnBasisOfRole(userId, EDIT_ONLY)) {
+        console.log('edit record')
+        Record.findByIdAndUpdate(recordId, {
+            active: status
+        }, (err, record) => {
+            if (err) {
+                res.status(500).json({
+                    msg: 'error updating record',
+                    error: err
+                })
+            } else {
+                res.json({ status: 200 })
+                User.findById(userId, (err, user) => {
+                    if (err) {
+                        console.log(err)
+                    } else {
+
+                        const log = new Log({
+                            user: user.name,
+                            action: "Post Status Changed -> Id -> " + record._id,
                             datetime: new Date().toLocaleString(),
                         })
                         log.save((err, log) => {
@@ -552,6 +628,47 @@ app.use("/api/news-records", (req, res) => {
         }
     })
 })
+
+app.use('/api/update-news-record', async (req, res) => {
+    // update category
+    console.log("update news record")
+    const {
+        id,
+        name,
+        fillColor,
+        recordId,
+    } = req.body;
+
+    const payload = {
+        name: name,
+        recordId: recordId,
+        fillColor: fillColor
+    }
+
+    NewsRecord.findByIdAndUpdate(id, payload, (err, newsrecord) => {
+        if (err) {
+            res.status(500).json({
+                msg: 'error updating news record',
+                error: err
+            })
+        } else {
+            res.json(newsrecord)
+            const log = new Log({
+                user: "Super User",
+                action: "Updated NewsRecord -> Id -> " + newsrecord._id,
+                datetime: new Date().toLocaleString(),
+            })
+            log.save((err, log) => {
+                if (err) {
+                    console.log(err)
+                }
+            }
+            )
+        }
+    }
+    )
+})
+
 
 // add news records
 app.use('/api/add-news-records', (req, res) => {
@@ -743,7 +860,7 @@ app.get("/api/users", (req, res) => {
         } else {
             res.json(users)
         }
-    })
+    }).sort({_id: -1})
 });
 
 // delete user
@@ -771,28 +888,27 @@ app.get('/api/logs', (req, res) => {
         } else {
             res.json(logs)
         }
-    })
+    }).sort({ _id: -1 })
 })
 
 app.use('/api/bulk-records', async (req, res) => {
     // add record
     const {
         records,
-        } = req.body;
+    } = req.body;
     console.log('add record')
-        Record.insertMany(records, (err, records) => {
-            if (err) {
-                res.status(500).json({
-                    msg: 'error saving records',
-                    error: err
-                })
-            } else {
-                res.json(records)
-            }
+    Record.insertMany(records, (err, records) => {
+        if (err) {
+            res.status(500).json({
+                msg: 'error saving records',
+                error: err
+            })
+        } else {
+            res.json(records)
         }
-        )
-    })
-
+    }
+    )
+})
 
 
 SERVER_PORT = process.env.PORT || 4000;

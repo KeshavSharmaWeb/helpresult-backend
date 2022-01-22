@@ -1,7 +1,7 @@
 let mongoose = require('mongoose');
 
 let RecordSchema = new mongoose.Schema({
-    acitve: Boolean,
+    active: Boolean,
     name: String,
     post_display_name: String,
     slug: String,
