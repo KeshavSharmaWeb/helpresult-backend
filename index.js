@@ -51,7 +51,6 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '20000000mb' }));
 app.use(cors());
 
 app.use('/ping', (req, res) => {
-
     res.json({
         msg: 'success',
         time: new Date().toLocaleString(),
@@ -73,7 +72,7 @@ app.use('/api/categories', (req, res) => {
             res.json(categories)
         }
     }
-    ).sort({_id: -1})
+    ).sort({ _id: -1 })
 
 })
 
@@ -188,7 +187,7 @@ app.use('/api/sub-categories', (req, res) => {
             res.json(categories)
         }
     }
-    ).sort({_id: -1})
+    ).sort({ _id: -1 })
 
 })
 
@@ -312,9 +311,9 @@ app.use('/api/records', (req, res) => {
                 res.json(records)
             }
         }
-        ).sort({_id: -1})
-    } else if(req.query.page) {
-        Record.find({active: true}, (err, records) => {
+        ).sort({ _id: -1 })
+    } else if (req.query.page) {
+        Record.find({ active: true }, (err, records) => {
             if (err) {
                 res.status(500).json({
                     msg: 'error fetching records',
@@ -324,10 +323,10 @@ app.use('/api/records', (req, res) => {
                 res.json(records)
             }
         }
-        ).sort({_id: -1}).limit(10).skip(parseInt(req.query.page) * 10)
+        ).sort({ _id: -1 }).limit(10).skip(parseInt(req.query.page) * 10)
         // )
     } else {
-        Record.find({active: true}, (err, records) => {
+        Record.find({ active: true }, (err, records) => {
             if (err) {
                 res.status(500).json({
                     msg: 'error fetching records',
@@ -337,7 +336,7 @@ app.use('/api/records', (req, res) => {
                 res.json(records)
             }
         }
-        ).sort({_id: -1})
+        ).sort({ _id: -1 })
     }
 })
 
@@ -376,7 +375,7 @@ app.use('/api/home-records', (req, res) => {
                 $in: [i.categoryId]
             },
             active: true
-        }).sort({_id: -1}).limit(i.limit).exec()
+        }).sort({ _id: -1 }).limit(i.limit).exec()
         // log thee length of fetch records
         final[categoryIdOfRecord] = fetchedRecords
     }, function (err) {
@@ -617,16 +616,40 @@ app.use('/api/update-record', async (req, res) => {
 // fetch news records
 app.use("/api/news-records", (req, res) => {
     console.log('fetch news records');
-    NewsRecord.find(req.query, (err, newsRecord) => {
-        if (err) {
-            res.status(500).json({
-                msg: 'error fetching news records',
-                error: err
-            })
-        } else {
-            res.json(newsRecord)
-        }
-    })
+    if (req.query.box === "yes") {
+        NewsRecord.find({ box: true }, (err, newsRecord) => {
+            if (err) {
+                res.status(500).json({
+                    msg: 'error fetching news records',
+                    error: err
+                })
+            } else {
+                res.json(newsRecord)
+            }
+        })
+    } else if (req.query.box === "no"){
+        NewsRecord.find({ box: false }, (err, newsRecord) => {
+            if (err) {
+                res.status(500).json({
+                    msg: 'error fetching news records',
+                    error: err
+                })
+            } else {
+                res.json(newsRecord)
+            }
+        })
+    } else {
+        NewsRecord.find({}, (err, newsRecord) => {
+            if (err) {
+                res.status(500).json({
+                    msg: 'error fetching news records',
+                    error: err
+                })
+            } else {
+                res.json(newsRecord)
+            }
+        })
+    }
 })
 
 app.use('/api/update-news-record', async (req, res) => {
@@ -672,12 +695,13 @@ app.use('/api/update-news-record', async (req, res) => {
 
 // add news records
 app.use('/api/add-news-records', (req, res) => {
-    const { name, recordId, fillColor } = req.body;
+    const { name, recordId, fillColor, isBox } = req.body;
 
     const newsRecord = new NewsRecord({
         name: name,
         recordId: recordId,
         fillColor: fillColor,
+        box: isBox,
         datetime: new Date().toLocaleString()
     })
 
@@ -860,7 +884,7 @@ app.get("/api/users", (req, res) => {
         } else {
             res.json(users)
         }
-    }).sort({_id: -1})
+    }).sort({ _id: -1 })
 });
 
 // delete user
